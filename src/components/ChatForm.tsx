@@ -1,9 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
+import { v4 } from "uuid";
 import { z } from "zod";
 import generateVideoThumbnail from "../utils/thumbnail";
+import axios from "axios";
 
 const chatFormSchema = z.object({
   title: z
@@ -14,10 +16,12 @@ const chatFormSchema = z.object({
 
 interface PreviewFile extends FileWithPath {
   thumbnail: string;
+  uploadProgress: number | undefined;
 }
 
 export default function ChatForm() {
   const [files, setFiles] = useState<PreviewFile[]>([]);
+  const [filesUploading, setFilesUploading] = useState(false);
 
   const {
     register,
@@ -39,10 +43,55 @@ export default function ChatForm() {
       filesToSet.push({
         ...file,
         thumbnail: await generateVideoThumbnail(file),
+        uploadProgress: 0,
       });
+
+      setFiles(filesToSet);
     }
-    setFiles(filesToSet);
-    console.log(acceptedFiles);
+
+    setFilesUploading(true);
+    try {
+      const results = await axios.all(
+        acceptedFiles.map((file: FileWithPath) => {
+          const data = new FormData();
+          data.append("file", file);
+          data.append("upload_preset", "video-upload-browser");
+          data.append("public_id", v4());
+          data.append("api_key", "539567675919287");
+
+          return axios.post(
+            "https://api.cloudinary.com/v1_1/dfv8hufs2/video/upload",
+            data,
+            {
+              onUploadProgress: (progress) => {
+                console.log(
+                  `Progress for file: ${file.path}: ${progress.progress}`
+                );
+
+                setFiles((files) =>
+                  files.map((localFile) => {
+                    if (file.path === localFile.path) {
+                      return {
+                        ...localFile,
+                        uploadProgress: progress.progress,
+                      };
+                    }
+
+                    return localFile;
+                  })
+                );
+              },
+            }
+          );
+        })
+      );
+
+      console.log(results);
+      setFilesUploading(false);
+    } catch (error) {
+      console.error("Error uploading the files!");
+      console.error(error);
+    }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -58,6 +107,14 @@ export default function ChatForm() {
     const filesToKeep = files.filter((file) => fileToDelete.path !== file.path);
     setFiles(filesToKeep);
   };
+
+  useEffect(
+    () => () => {
+      // Make sure to revoke the data uris to avoid memory leaks
+      files.forEach((file) => URL.revokeObjectURL(file.thumbnail));
+    },
+    [files]
+  );
 
   return (
     <>
@@ -123,12 +180,24 @@ export default function ChatForm() {
             <div className="grid grid-cols-2 gap-x-4 mt-2">
               {files.map((file) => (
                 <div key={file.path}>
-                  <p className="font-bold text-sm text-gray-600">{file.name}</p>
+                  <p className="font-bold text-sm text-gray-600 truncate">
+                    {file.path}
+                  </p>
                   <img
                     src={file.thumbnail}
                     onClick={() => deleteFile(file)}
                     className="rounded-lg"
                   />
+                  {file.uploadProgress && (
+                    <div className="mt-1 w-full bg-gray-200 rounded dark:bg-gray-700">
+                      <div
+                        className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded"
+                        style={{ width: `${file.uploadProgress * 100}%` }}
+                      >
+                        {Math.round(file.uploadProgress * 100)}%
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -137,7 +206,8 @@ export default function ChatForm() {
 
         <button
           type="submit"
-          className="px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-500 hover:shadow w-full mt-4"
+          disabled={filesUploading}
+          className="px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-500 hover:shadow w-full mt-4 disabled:cursor-not-allowed disabled:bg-green-800"
         >
           Create Chat
         </button>
