@@ -14,6 +14,7 @@ specifiers:
   axios: ^1.1.2
   postcss: ^8.4.17
   react: ^18.2.0
+  react-circular-progressbar: ^2.1.0
   react-dom: ^18.2.0
   react-dropzone: ^14.2.2
   react-hook-form: ^7.37.0
@@ -30,6 +31,7 @@ dependencies:
   '@tabler/icons': 1.101.0_biqbaboplfbrettd7655fr4n2y
   axios: 1.1.2
   react: 18.2.0
+  react-circular-progressbar: 2.1.0_react@18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-dropzone: 14.2.2_react@18.2.0
   react-hook-form: 7.37.0_react@18.2.0
@@ -1430,6 +1432,14 @@ packages:
     resolution: {integrity: sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==}
     engines: {node: '>=10'}
     dev: true
+
+  /react-circular-progressbar/2.1.0_react@18.2.0:
+    resolution: {integrity: sha512-xp4THTrod4aLpGy68FX/k1Q3nzrfHUjUe5v6FsdwXBl3YVMwgeXYQKDrku7n/D6qsJA9CuunarAboC2xCiKs1g==}
+    peerDependencies:
+      react: ^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+    dev: false
 
   /react-dom/18.2.0_react@18.2.0:
     resolution: {integrity: sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==}

@@ -6,12 +6,15 @@ import { v4 } from "uuid";
 import { z } from "zod";
 import generateVideoThumbnail from "../utils/thumbnail";
 import axios from "axios";
+import UploadIcon from "./icons/UploadIcon";
+import UploadVideo from "./UploadVideo";
 
 const chatFormSchema = z.object({
   title: z
     .string()
     .min(10, { message: "Your chat title should have at least 10 characters" }),
-  videos: z.any(),
+  startVideo: z.any(),
+  endVideo: z.any(),
 });
 
 interface PreviewFile extends FileWithPath {
@@ -35,77 +38,6 @@ export default function ChatForm() {
   const onSubmit = (data: any) => {
     console.log("Submitting form with the following data:");
     console.log(data);
-  };
-
-  const onDrop = useCallback(async (acceptedFiles: any) => {
-    let filesToSet = [];
-    for (const file of acceptedFiles) {
-      filesToSet.push({
-        ...file,
-        thumbnail: await generateVideoThumbnail(file),
-        uploadProgress: 0,
-      });
-
-      setFiles(filesToSet);
-    }
-
-    setFilesUploading(true);
-    try {
-      const results = await axios.all(
-        acceptedFiles.map((file: FileWithPath) => {
-          const data = new FormData();
-          data.append("file", file);
-          data.append("upload_preset", "video-upload-browser");
-          data.append("public_id", v4());
-          data.append("api_key", "539567675919287");
-
-          return axios.post(
-            "https://api.cloudinary.com/v1_1/dfv8hufs2/video/upload",
-            data,
-            {
-              onUploadProgress: (progress) => {
-                console.log(
-                  `Progress for file: ${file.path}: ${progress.progress}`
-                );
-
-                setFiles((files) =>
-                  files.map((localFile) => {
-                    if (file.path === localFile.path) {
-                      return {
-                        ...localFile,
-                        uploadProgress: progress.progress,
-                      };
-                    }
-
-                    return localFile;
-                  })
-                );
-              },
-            }
-          );
-        })
-      );
-
-      console.log(results);
-      setFilesUploading(false);
-    } catch (error) {
-      console.error("Error uploading the files!");
-      console.error(error);
-    }
-  }, []);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    maxSize: 100000000,
-    multiple: true,
-    accept: {
-      "video/mp4": [".mp4"],
-    },
-  });
-
-  const deleteFile = (fileToDelete: PreviewFile) => {
-    const filesToKeep = files.filter((file) => fileToDelete.path !== file.path);
-    setFiles(filesToKeep);
   };
 
   useEffect(
@@ -147,7 +79,19 @@ export default function ChatForm() {
           </div>
         </div>
 
-        <div
+        <div>
+          <p className="font-semibold">Videos</p>
+          <p className="text-gray-400 text-sm">
+            Provide some brief topical videos to introduce your live chat and
+            finish the live chat off with direction for participants
+          </p>
+          <div className="grid grid-cols-2 gap-x-4 mt-4">
+            <UploadVideo label="Start Video" />
+            <UploadVideo label="End Video" />
+          </div>
+        </div>
+
+        {/* <div
           {...getRootProps()}
           className="p-6 border-2 border-dashed border-gray-300 rounded-lg flex justify-center cursor-pointer hover:border-dotted hover:bg-gray-100"
         >
@@ -179,17 +123,15 @@ export default function ChatForm() {
             <p className="font-semibold">Uploaded files</p>
             <div className="grid grid-cols-2 gap-x-4 mt-2">
               {files.map((file) => (
-                <div key={file.path}>
-                  <p className="font-bold text-sm text-gray-600 truncate">
-                    {file.path}
-                  </p>
+                <div key={file.path} className="space-y-1">
+                  <p className="text-sm text-gray-500 truncate">{file.path}</p>
                   <img
                     src={file.thumbnail}
                     onClick={() => deleteFile(file)}
                     className="rounded-lg"
                   />
                   {file.uploadProgress && (
-                    <div className="mt-1 w-full bg-gray-200 rounded dark:bg-gray-700">
+                    <div className="w-full bg-gray-200 rounded dark:bg-gray-700">
                       <div
                         className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded"
                         style={{ width: `${file.uploadProgress * 100}%` }}
@@ -202,7 +144,7 @@ export default function ChatForm() {
               ))}
             </div>
           </div>
-        )}
+        )} */}
 
         <button
           type="submit"
