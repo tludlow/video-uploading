@@ -7,9 +7,12 @@ import UploadIcon from "./icons/UploadIcon";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import DeleteIcon from "./icons/DeleteIcon";
+import { useFormContext } from "react-hook-form";
 
 interface Props {
   label: string;
+  formName: string;
+  setUploadedFile: any;
 }
 
 interface PreviewFile extends FileWithPath {
@@ -17,12 +20,18 @@ interface PreviewFile extends FileWithPath {
   uploadProgress: number | undefined;
 }
 
-export default function UploadVideo({ label }: Props) {
+export default function UploadVideo({
+  label,
+  formName,
+  setUploadedFile,
+}: Props) {
   const [file, setFile] = useState<PreviewFile | undefined>(undefined);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [deleteToken, setDeleteToken] = useState<string | undefined>(undefined);
 
   const progressPercent = Math.round(uploadProgress * 100);
+
+  const { register } = useFormContext();
 
   const onDrop = useCallback(async (acceptedFiles: any) => {
     const acceptedFile = acceptedFiles[0];
@@ -55,6 +64,7 @@ export default function UploadVideo({ label }: Props) {
       console.log(result);
 
       setDeleteToken(result.data.delete_token);
+      setUploadedFile(formName, result.data.secure_url);
     } catch (error) {
       console.error("Error uploading the files!");
       console.error(error);

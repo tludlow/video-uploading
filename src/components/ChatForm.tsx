@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCallback, useEffect, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { v4 } from "uuid";
 import { z } from "zod";
 import generateVideoThumbnail from "../utils/thumbnail";
@@ -26,11 +26,7 @@ export default function ChatForm() {
   const [files, setFiles] = useState<PreviewFile[]>([]);
   const [filesUploading, setFilesUploading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
+  const methods = useForm({
     mode: "onBlur",
     resolver: zodResolver(chatFormSchema),
   });
@@ -49,9 +45,9 @@ export default function ChatForm() {
   );
 
   return (
-    <>
+    <FormProvider {...methods}>
       <form
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={methods.handleSubmit(onSubmit)}
         className="m-12 space-y-8 max-w-lg border border-gray-300 p-6 border-lg"
       >
         <h1 className="text-xl font-bold">New live chat</h1>
@@ -63,9 +59,9 @@ export default function ChatForm() {
           >
             Title
           </label>
-          {errors.title?.message && (
+          {methods.formState.errors.title?.message && (
             <p className="text-red-500 text-sm">
-              {errors.title?.message.toString()}
+              {methods.formState.errors.title?.message?.toString()}
             </p>
           )}
           <div className="mt-1">
@@ -74,7 +70,7 @@ export default function ChatForm() {
               id="title"
               className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md placeholder:text-gray-400"
               placeholder="you@example.com"
-              {...register("title")}
+              {...methods.register("title")}
             />
           </div>
         </div>
@@ -86,65 +82,18 @@ export default function ChatForm() {
             finish the live chat off with direction for participants
           </p>
           <div className="grid grid-cols-2 gap-x-4 mt-4">
-            <UploadVideo label="Start Video" />
-            <UploadVideo label="End Video" />
+            <UploadVideo
+              label="Start Video"
+              formName="startVideo"
+              setUploadedFile={methods.setValue}
+            />
+            <UploadVideo
+              label="End Video"
+              formName="endVideo"
+              setUploadedFile={methods.setValue}
+            />
           </div>
         </div>
-
-        {/* <div
-          {...getRootProps()}
-          className="p-6 border-2 border-dashed border-gray-300 rounded-lg flex justify-center cursor-pointer hover:border-dotted hover:bg-gray-100"
-        >
-          <div>{isDragActive && <p>Drag them here!</p>}</div>
-          <div className="flex items-center space-x-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
-              />
-            </svg>
-            <p className="text-gray-600">
-              Drag your files here or click to upload
-            </p>
-          </div>
-          <input {...getInputProps()} {...register("videos")} />
-        </div>
-
-        {files.length > 0 && (
-          <div className="mt-4">
-            <p className="font-semibold">Uploaded files</p>
-            <div className="grid grid-cols-2 gap-x-4 mt-2">
-              {files.map((file) => (
-                <div key={file.path} className="space-y-1">
-                  <p className="text-sm text-gray-500 truncate">{file.path}</p>
-                  <img
-                    src={file.thumbnail}
-                    onClick={() => deleteFile(file)}
-                    className="rounded-lg"
-                  />
-                  {file.uploadProgress && (
-                    <div className="w-full bg-gray-200 rounded dark:bg-gray-700">
-                      <div
-                        className="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded"
-                        style={{ width: `${file.uploadProgress * 100}%` }}
-                      >
-                        {Math.round(file.uploadProgress * 100)}%
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )} */}
 
         <button
           type="submit"
@@ -154,6 +103,6 @@ export default function ChatForm() {
           Create Chat
         </button>
       </form>
-    </>
+    </FormProvider>
   );
 }
