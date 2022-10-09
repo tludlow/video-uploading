@@ -74,6 +74,7 @@ export default function UploadVideo({
   const onDelete = () => {
     setFile(undefined);
     setUploadProgress(0);
+    setUploadedFile(formName, "");
     if (inputRef.current) {
       inputRef.current.value = "";
     }

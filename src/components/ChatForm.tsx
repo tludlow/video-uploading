@@ -1,20 +1,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useEffect, useState } from "react";
-import { FileWithPath, useDropzone } from "react-dropzone";
+import { useEffect, useState } from "react";
+import { FileWithPath } from "react-dropzone";
 import { FormProvider, useForm } from "react-hook-form";
-import { v4 } from "uuid";
 import { z } from "zod";
-import generateVideoThumbnail from "../utils/thumbnail";
-import axios from "axios";
-import UploadIcon from "./icons/UploadIcon";
 import UploadVideo from "./UploadVideo";
 
 const chatFormSchema = z.object({
   title: z
     .string()
     .min(10, { message: "Your chat title should have at least 10 characters" }),
-  startVideo: z.any(),
-  endVideo: z.any(),
+  startVideo: z
+    .string()
+    .url({ message: "You should upload a video for this field!" }),
+  endVideo: z
+    .string()
+    .url({ message: "You should upload a video for this field!" }),
 });
 
 interface PreviewFile extends FileWithPath {
@@ -93,6 +93,19 @@ export default function ChatForm() {
               setUploadedFile={methods.setValue}
             />
           </div>
+
+          {methods.formState.errors.startVideo?.message && (
+            <p className="text-red-500">
+              Start video:{" "}
+              {methods.formState.errors.startVideo?.message?.toString()}
+            </p>
+          )}
+          {methods.formState.errors.endVideo?.message && (
+            <p className="text-red-500">
+              End video:{" "}
+              {methods.formState.errors.endVideo?.message?.toString()}
+            </p>
+          )}
         </div>
 
         <button
