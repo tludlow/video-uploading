@@ -1,10 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DatePicker, TimeRangeInput } from "@mantine/dates";
-import { IconRegistered } from "@tabler/icons";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FileWithPath } from "react-dropzone";
-import { FormProvider, useForm } from "react-hook-form";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 import { z } from "zod";
 import UploadVideo from "./UploadVideo";
 
@@ -12,6 +11,8 @@ const chatFormSchema = z.object({
   title: z
     .string()
     .min(10, { message: "Your chat title should have at least 10 characters" }),
+  date: z.date({ required_error: "You must provide a date for this chat" }),
+  times: z.array(z.date()).length(2),
   startVideo: z
     .string()
     .url({ message: "You should upload a video for this field!" }),
@@ -65,7 +66,7 @@ export default function ChatForm() {
               type="text"
               id="title"
               className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md placeholder:text-gray-400 p-2 border"
-              placeholder="you@example.com"
+              placeholder="A very jolly chat"
               {...methods.register("title")}
             />
           </div>
@@ -83,16 +84,44 @@ export default function ChatForm() {
               <label className="font-semibold" htmlFor="date">
                 Date
               </label>
-              <DatePicker placeholder="Pick date" withAsterisk />
+              <Controller
+                control={methods.control}
+                name="date"
+                render={({ field }) => (
+                  <DatePicker
+                    placeholder="Pick date"
+                    withAsterisk
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    onChange={(date) => {
+                      field.onChange(date);
+                      console.log(field);
+                    }}
+                    value={field.value}
+                  />
+                )}
+              />
             </div>
             <div className="flex flex-col space-y-1">
               <label className="font-semibold" htmlFor="time">
                 Times
               </label>
-              <TimeRangeInput
-                value={chatTime}
-                onChange={setChatTime}
-                clearable
+              {}
+              <Controller
+                control={methods.control}
+                name="times"
+                render={({ field }) => (
+                  <TimeRangeInput
+                    value={field.value}
+                    onChange={(times) => {
+                      field.onChange(times);
+                      console.log(field);
+                    }}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    clearable
+                  />
+                )}
               />
             </div>
           </div>
