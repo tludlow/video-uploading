@@ -111,9 +111,14 @@ export default function UploadVideo({
             />
           )}
           {uploadProgress === 1 && (
-            <button onClick={() => onDelete()}>
-              <DeleteIcon className="h-8 w-8 text-white absolute top-1 right-1 hover:text-gray-400 cursor-pointer" />
-            </button>
+            <>
+              <div className="absolute top-2 left-1 py-1 px-2 bg-white rounded-full text-black text-sm">
+                <p>{label}</p>
+              </div>
+              <button onClick={() => onDelete()}>
+                <DeleteIcon className="h-8 w-8 text-white absolute top-1 right-1 hover:text-gray-400 cursor-pointer" />
+              </button>
+            </>
           )}
         </div>
       ) : (

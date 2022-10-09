@@ -1,4 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { DatePicker, TimeRangeInput } from "@mantine/dates";
+import { IconRegistered } from "@tabler/icons";
+import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { FileWithPath } from "react-dropzone";
 import { FormProvider, useForm } from "react-hook-form";
@@ -23,8 +26,9 @@ interface PreviewFile extends FileWithPath {
 }
 
 export default function ChatForm() {
-  const [files, setFiles] = useState<PreviewFile[]>([]);
-  const [filesUploading, setFilesUploading] = useState(false);
+  const now = dayjs().hour(9).minute(0).toDate();
+  const then = dayjs(now).add(1, "hour").toDate();
+  const [chatTime, setChatTime] = useState<[Date, Date]>([now, then]);
 
   const methods = useForm({
     mode: "onBlur",
@@ -35,14 +39,6 @@ export default function ChatForm() {
     console.log("Submitting form with the following data:");
     console.log(data);
   };
-
-  useEffect(
-    () => () => {
-      // Make sure to revoke the data uris to avoid memory leaks
-      files.forEach((file) => URL.revokeObjectURL(file.thumbnail));
-    },
-    [files]
-  );
 
   return (
     <FormProvider {...methods}>
@@ -68,10 +64,37 @@ export default function ChatForm() {
             <input
               type="text"
               id="title"
-              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md placeholder:text-gray-400"
+              className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md placeholder:text-gray-400 p-2 border"
               placeholder="you@example.com"
               {...methods.register("title")}
             />
+          </div>
+        </div>
+
+        <div>
+          <p className="font-semibold">Event Scheduling</p>
+          <p className="text-gray-500 text-sm">
+            Remember that your platform is set to the{" "}
+            <span className="text-blue-500">Eastern Standard Time</span> (UTC -
+            5)
+          </p>
+          <div className="grid grid-cols-2 gap-x-4 mt-2">
+            <div className="flex flex-col space-y-1">
+              <label className="font-semibold" htmlFor="date">
+                Date
+              </label>
+              <DatePicker placeholder="Pick date" withAsterisk />
+            </div>
+            <div className="flex flex-col space-y-1">
+              <label className="font-semibold" htmlFor="time">
+                Times
+              </label>
+              <TimeRangeInput
+                value={chatTime}
+                onChange={setChatTime}
+                clearable
+              />
+            </div>
           </div>
         </div>
 
@@ -110,7 +133,6 @@ export default function ChatForm() {
 
         <button
           type="submit"
-          disabled={filesUploading}
           className="px-4 py-2 rounded-lg text-white bg-green-600 hover:bg-green-500 hover:shadow w-full mt-4 disabled:cursor-not-allowed disabled:bg-green-800"
         >
           Create Chat
