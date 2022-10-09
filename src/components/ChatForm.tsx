@@ -29,7 +29,6 @@ interface PreviewFile extends FileWithPath {
 export default function ChatForm() {
   const now = dayjs().hour(9).minute(0).toDate();
   const then = dayjs(now).add(1, "hour").toDate();
-  const [chatTime, setChatTime] = useState<[Date, Date]>([now, then]);
 
   const methods = useForm({
     mode: "onBlur",
@@ -134,16 +133,8 @@ export default function ChatForm() {
             finish the live chat off with direction for participants
           </p>
           <div className="grid grid-cols-2 gap-x-4 mt-4">
-            <UploadVideo
-              label="Start Video"
-              formName="startVideo"
-              setUploadedFile={methods.setValue}
-            />
-            <UploadVideo
-              label="End Video"
-              formName="endVideo"
-              setUploadedFile={methods.setValue}
-            />
+            <UploadVideo label="Start Video" formName="startVideo" />
+            <UploadVideo label="End Video" formName="endVideo" />
           </div>
 
           {methods.formState.errors.startVideo?.message && (
